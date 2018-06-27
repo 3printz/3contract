@@ -25,11 +25,8 @@ func main() {
 	setUpKeys()
 
 	// init cassandra session
-	initCStarSession()
+	//initCStarSession()
 
 	// init kafka producer, consumer
 	initKafkaz()
-
-	// start http server
-	initHttpz()
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/wvanbergen/kafka/consumergroup"
-	"log"
+	//"log"
 	"os"
 	"time"
 )
@@ -14,18 +14,22 @@ var kchan = make(chan Kmsg, 10)
 
 func initKafkaz() {
 	//setup sarama log to stdout
-	sarama.Logger = log.New(os.Stdout, "", log.Ltime)
+	//sarama.Logger = log.New(os.Stdout, "", log.Ltime)
 
-	// consuner
-	cg := initConzumer()
-	go conzume(cg)
+	// consuner req
+	cgReq := initReqConzumer()
+	go conzumeReq(cgReq)
+
+	// consuner resp
+	cgResp := initRespConzumer()
+	go conzumeResp(cgResp)
 
 	// producer
 	pr := initProduzer()
-	go produze(pr)
+	produze(pr)
 }
 
-func initConzumer() *consumergroup.ConsumerGroup {
+func initReqConzumer() *consumergroup.ConsumerGroup {
 	// consumer config
 	config := consumergroup.NewConfig()
 	config.Offsets.Initial = sarama.OffsetOldest
@@ -33,8 +37,28 @@ func initConzumer() *consumergroup.ConsumerGroup {
 
 	// join to consumer group
 	zookeeperConn := kafkaConfig.zhost + ":" + kafkaConfig.zport
-	cg, err := consumergroup.JoinConsumerGroup(kafkaConfig.cgroup,
-		[]string{kafkaConfig.topic},
+	cg, err := consumergroup.JoinConsumerGroup("orderzreqg",
+		[]string{"orderzreq"},
+		[]string{zookeeperConn},
+		config)
+	if err != nil {
+		fmt.Println("Error consumer group: ", err.Error())
+		os.Exit(1)
+	}
+
+	return cg
+}
+
+func initRespConzumer() *consumergroup.ConsumerGroup {
+	// consumer config
+	config := consumergroup.NewConfig()
+	config.Offsets.Initial = sarama.OffsetOldest
+	config.Offsets.ProcessingTimeout = 10 * time.Second
+
+	// join to consumer group
+	zookeeperConn := kafkaConfig.zhost + ":" + kafkaConfig.zport
+	cg, err := consumergroup.JoinConsumerGroup("orderzrespg",
+		[]string{"orderzresp"},
 		[]string{zookeeperConn},
 		config)
 	if err != nil {
@@ -63,16 +87,18 @@ func initProduzer() sarama.SyncProducer {
 	return pr
 }
 
-func conzume(cg *consumergroup.ConsumerGroup) {
+func conzumeReq(cg *consumergroup.ConsumerGroup) {
 	for {
 		select {
 		case msg := <-cg.Messages():
 			// messages coming through chanel
 			// only take messages from subscribed topic
-			if msg.Topic != kafkaConfig.topic {
+			if msg.Topic != "orderzreq" {
 				continue
 			}
-			fmt.Println("Received topic, msg: ", msg.Topic, msg.Value)
+
+			z := string(msg.Value)
+			fmt.Println("Received req topic, msg: ", msg.Topic, z)
 
 			// commit to zookeeper that message is read
 			// this prevent read message multiple times after restart
@@ -81,7 +107,34 @@ func conzume(cg *consumergroup.ConsumerGroup) {
 				fmt.Println("Error commit zookeeper: ", err.Error())
 			}
 
-			// TODO start goroutene to handle the senz message
+			// start goroutene to handle the senz message(contractz)
+			go reqContract(z)
+		}
+	}
+}
+
+func conzumeResp(cg *consumergroup.ConsumerGroup) {
+	for {
+		select {
+		case msg := <-cg.Messages():
+			// messages coming through chanel
+			// only take messages from subscribed topic
+			if msg.Topic != "orderzresp" {
+				continue
+			}
+
+			z := string(msg.Value)
+			fmt.Println("Received resp topic, msg: ", msg.Topic, z)
+
+			// commit to zookeeper that message is read
+			// this prevent read message multiple times after restart
+			err := cg.CommitUpto(msg)
+			if err != nil {
+				fmt.Println("Error commit zookeeper: ", err.Error())
+			}
+
+			// TODO start goroutene to handle the response message(contractz)
+			go respContract(z)
 		}
 	}
 }
