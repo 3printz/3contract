@@ -80,8 +80,23 @@ func senzToTrans(senz *Senz) *Trans {
 	trans.Id = uuid()
 	trans.Timestamp = timestamp()
 	trans.FromZaddress = senz.Sender
-	trans.ToZaddress = senz.Attr["to"]
+	trans.ToZaddress = senz.Receiver
+	trans.PromizeBlob = "actual contract"
+	trans.Type = senz.Attr["contract"]
 	trans.Digsig = senz.Digsig
+
+	return trans
+}
+
+func eventTrans(from string, to string, event string) *Trans {
+	trans := &Trans{}
+	trans.Bank = config.senzieName
+	trans.Id = uuid()
+	trans.Timestamp = timestamp()
+	trans.FromZaddress = from
+	trans.ToZaddress = to
+	trans.PromizeBlob = "actual contract"
+	trans.Type = event
 
 	return trans
 }
@@ -121,6 +136,17 @@ func statusSenz(status string, uid string, to string) string {
 	z := "DATA #status " + status +
 		" #uid " + uid +
 		" @" + to +
+		" ^" + config.senzieName
+	s, _ := sign(z, getIdRsa())
+
+	return z + " " + s
+}
+
+func tranzSenz(uid string, event string, time int64) string {
+	z := "DATA #uid " + uid +
+		" #time " + strconv.FormatInt(time, 10) +
+		" #event " + event +
+		" @" + "tranz" +
 		" ^" + config.senzieName
 	s, _ := sign(z, getIdRsa())
 

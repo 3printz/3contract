@@ -79,36 +79,22 @@ func consistancy(c string) gocql.Consistency {
 func createTrans(trans *Trans) error {
 	insert := func(table string) error {
 		q := "INSERT INTO " + table + ` (
-                bank,
+                origin_zaddress,
                 id,
-                promize_bank,
-                promize_id,
-                promize_amount,
-                promize_blob,
+                blob,
                 from_zaddress,
-                from_bank,
-                from_account,
                 to_zaddress,
-                to_bank,
-                to_account,
                 timestamp,
                 digsig,
-                type
+                action
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 		err := Session.Query(q,
 			trans.Bank,
 			trans.Id,
-			trans.PromizeBank,
-			trans.PromizeId,
-			trans.PromizeAmount,
 			trans.PromizeBlob,
 			trans.FromZaddress,
-			trans.FromBank,
-			trans.FromAccount,
 			trans.ToZaddress,
-			trans.ToBank,
-			trans.ToAccount,
 			trans.Timestamp,
 			trans.Digsig,
 			trans.Type).Exec()
