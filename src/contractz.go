@@ -27,15 +27,17 @@ func reqContract(z string) {
 	rchans[uid] = c
 
 	// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
-	// TODO distribute contract to all chainz topics
-	kmsg = Kmsg{
-		Topic: "chain",
-		Msg:   z,
+	topics := []string{"oemchain", "amcchain"}
+	for _, topic := range topics {
+		kmsg = Kmsg{
+			Topic: topic,
+			Msg:   z,
+		}
+		kchan <- kmsg
 	}
-	kchan <- kmsg
 
 	// wait for response
-	waitForResponse(uid, c, 1)
+	waitForResponse(uid, c, len(topics))
 }
 
 func waitForResponse(uid string, c chan string, noPeers int) {
@@ -53,7 +55,7 @@ func waitForResponse(uid string, c chan string, noPeers int) {
 			if i == noPeers {
 				// all peer responses received
 				// TODO send response back to aws lambda
-				println("all peers done....")
+				println("all peers done.... ")
 
 				// remove channel
 				delete(rchans, uid)
