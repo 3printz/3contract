@@ -1,16 +1,16 @@
 package main
 
+var rchans = make(map[string](chan string))
+
 func reqContract(z string) {
 	println("request received... " + z)
 
-	//senz := parse(z)
-
 	// save event (request contract)
-	t := eventTrans("restz", "orderzreq", "Contract request received")
+	t := eventTrans("rest", "opsreq", "Contract request received")
 	createTrans(t)
 
 	// save event (broadcast contract)
-	t = eventTrans("orderzreq", "*", "Broadcast contract request")
+	t = eventTrans("opsreq", "*", "Broadcast contract request")
 	createTrans(t)
 
 	// publish to tranz
@@ -20,13 +20,46 @@ func reqContract(z string) {
 	}
 	kchan <- kmsg
 
+	// create channel and add to rchans with uuid
+	c := make(chan string, 5)
+	senz := parse(z)
+	uid := senz.Attr["uid"]
+	rchans[uid] = c
+
 	// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
 	// TODO distribute contract to all chainz topics
 	kmsg = Kmsg{
-		Topic: "chainz",
+		Topic: "chain",
 		Msg:   z,
 	}
 	kchan <- kmsg
+
+	// wait for response
+	waitForResponse(uid, c, 1)
+}
+
+func waitForResponse(uid string, c chan string, noPeers int) {
+	var i int = 0
+	responses := []string{}
+	for {
+		select {
+		case r := <-c:
+			println("reponse recived " + r)
+
+			// append response
+			responses = append(responses, r)
+
+			i = i + 1
+			if i == noPeers {
+				// all peer responses received
+				// TODO send response back to aws lambda
+				println("all peers done....")
+
+				// remove channel
+				delete(rchans, uid)
+			}
+		}
+	}
 }
 
 func respContract(z string) {
@@ -35,11 +68,7 @@ func respContract(z string) {
 	senz := parse(z)
 
 	// save event (response received)
-	t := eventTrans(senz.Sender, "orderzresp", "Contract response received")
-	createTrans(t)
-
-	// save event (send contract back)
-	t = eventTrans("orderzreq", "restz", "Reply contract result")
+	t := eventTrans(senz.Sender, "opsresp", "Contract response received")
 	createTrans(t)
 
 	// publish to tranz
@@ -49,13 +78,8 @@ func respContract(z string) {
 	}
 	kchan <- kmsg
 
-	// TODO handle contract responses from multiple chainz peers
-	// TODO take decition according to the multiple chainz responses
-
-	// TODO response back to restz topic
-	kmsg = Kmsg{
-		Topic: "restz",
-		Msg:   z,
+	// find matching channel with uid and send z
+	if c, ok := rchans[senz.Attr["uid"]]; ok {
+		c <- z
 	}
-	kchan <- kmsg
 }

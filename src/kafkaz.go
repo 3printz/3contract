@@ -37,8 +37,8 @@ func initReqConzumer() *consumergroup.ConsumerGroup {
 
 	// join to consumer group
 	zookeeperConn := kafkaConfig.zhost + ":" + kafkaConfig.zport
-	cg, err := consumergroup.JoinConsumerGroup("orderzreqg",
-		[]string{"orderzreq"},
+	cg, err := consumergroup.JoinConsumerGroup("opsreqg",
+		[]string{"opsreq"},
 		[]string{zookeeperConn},
 		config)
 	if err != nil {
@@ -57,8 +57,8 @@ func initRespConzumer() *consumergroup.ConsumerGroup {
 
 	// join to consumer group
 	zookeeperConn := kafkaConfig.zhost + ":" + kafkaConfig.zport
-	cg, err := consumergroup.JoinConsumerGroup("orderzrespg",
-		[]string{"orderzresp"},
+	cg, err := consumergroup.JoinConsumerGroup("opsrespg",
+		[]string{"opsresp"},
 		[]string{zookeeperConn},
 		config)
 	if err != nil {
@@ -93,8 +93,7 @@ func conzumeReq(cg *consumergroup.ConsumerGroup) {
 		case msg := <-cg.Messages():
 			// messages coming through chanel
 			// only take messages from subscribed topic
-			if msg.Topic != "orderzreq" {
-				println("s----- " + msg.Topic)
+			if msg.Topic != "opsreq" {
 				continue
 			}
 
@@ -120,7 +119,7 @@ func conzumeResp(cg *consumergroup.ConsumerGroup) {
 		case msg := <-cg.Messages():
 			// messages coming through chanel
 			// only take messages from subscribed topic
-			if msg.Topic != "orderzresp" {
+			if msg.Topic != "opsresp" {
 				continue
 			}
 
@@ -134,7 +133,7 @@ func conzumeResp(cg *consumergroup.ConsumerGroup) {
 				fmt.Println("Error commit zookeeper: ", err.Error())
 			}
 
-			// TODO start goroutene to handle the response message(contractz)
+			// start goroutene to handle the response message
 			go respContract(z)
 		}
 	}
