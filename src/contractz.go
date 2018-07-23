@@ -6,11 +6,7 @@ func reqContract(z string) {
 	println("request received... " + z)
 
 	// save event (request contract)
-	t := eventTrans("rest", "opsreq", "Contract request received")
-	createTrans(t)
-
-	// save event (broadcast contract)
-	t = eventTrans("opsreq", "*", "Broadcast contract request")
+	t := eventTrans("rezt", "opz", "Contract request received")
 	createTrans(t)
 
 	// publish to tranz
@@ -27,8 +23,13 @@ func reqContract(z string) {
 	rchans[uid] = c
 
 	// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
-	topics := []string{"oemchain", "amcchain"}
+	topics := []string{"oemchain1", "amcchain"}
 	for _, topic := range topics {
+		// save event (broadcast contract)
+		t = eventTrans("opsreq", "*", "Broadcast contract request")
+		createTrans(t)
+
+		// push to kafka
 		kmsg = Kmsg{
 			Topic: topic,
 			Msg:   z,
