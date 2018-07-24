@@ -36,7 +36,7 @@ var config = Config{
 	switchHost: getEnv("SWITCH_HOST", "www.rahasak.com"),
 	switchPort: getEnv("SWITCH_PORT", "7070"),
 	senzieMode: getEnv("SENZIE_MODE", "dev"),
-	senzieName: getEnv("SENZIE_NAME", "sampath"),
+	senzieName: getEnv("SENZIE_NAME", "ops"),
 	dotKeys:    getEnv("DOT_KEYS", ".keys"),
 	idRsa:      getEnv("ID_RSA", ".keys/id_rsa"),
 	idRsaPub:   getEnv("ID_RSA_PUB", ".keys/id_rsa.pub"),
