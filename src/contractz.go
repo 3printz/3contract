@@ -1,12 +1,16 @@
 package main
 
+import (
+	"log"
+)
+
 var rchans = make(map[string](chan string))
 
 func reqContract(z string) {
-	println("request received... " + z)
+	log.Printf("contract request received, %s", z)
 
 	// save event (request contract)
-	t := eventTrans("rest", "opsreq", "Contract request received")
+	t := eventTrans("3rest", "3ops", "Contract request received")
 	createTrans(t)
 
 	// publish to tranz
@@ -16,20 +20,41 @@ func reqContract(z string) {
 	}
 	kchan <- kmsg
 
-	// create channel and add to rchans with uuid
-	c := make(chan string, 5)
 	senz := parse(z)
-	uid := senz.Attr["uid"]
-	rchans[uid] = c
+	if senz.Attr["type"] == "PREQ" {
+		// handle purchase req, match amc/oem
+		// create channel and add to rchans with uuid
+		c := make(chan string, 5)
+		uid := senz.Attr["uid"]
+		rchans[uid] = c
 
-	// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
-	topics := []string{"oemchain", "amcchain", "amcchain2"}
-	for _, topic := range topics {
+		// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
+		topics := []string{"oem1", "amc1"}
+		for _, topic := range topics {
+			// save even
+			t = eventTrans("3ops", topic, "Send contract request")
+			createTrans(t)
+
+			// publish to kafka
+			kmsg = Kmsg{
+				Topic: topic,
+				Msg:   z,
+			}
+			kchan <- kmsg
+		}
+
+		// wait for response
+		waitForResponse(uid, c, len(topics))
+	}
+
+	if senz.Attr["type"] == "PORD" {
+		// handle purchase order
 		// save even
-		t = eventTrans("opsreq", topic, "Send contract request")
+		topic := senz.Attr["oemid"]
+		t = eventTrans("3ops", topic, "Send contract request")
 		createTrans(t)
 
-		// publish to kafka
+		// call oem to get design via kafka
 		kmsg = Kmsg{
 			Topic: topic,
 			Msg:   z,
@@ -37,8 +62,10 @@ func reqContract(z string) {
 		kchan <- kmsg
 	}
 
-	// wait for response
-	waitForResponse(uid, c, len(topics))
+	if senz.Attr["type"] == "PRINT" {
+		// handle print request
+		// call amc to print
+	}
 }
 
 func waitForResponse(uid string, c chan string, noPeers int) {
@@ -47,16 +74,16 @@ func waitForResponse(uid string, c chan string, noPeers int) {
 	for {
 		select {
 		case r := <-c:
-			println("reponse recived " + r)
+			log.Printf("response from peer: %s", r)
 
 			// append response
 			responses = append(responses, r)
 
 			i = i + 1
 			if i == noPeers {
-				// all peer responses received
-				// TODO send response back to aws lambda
-				println("all peers done.... ")
+				// all peer responses received, send response back
+				log.Printf("all peers done uid: %s", "<UID>")
+				notifyPreq()
 
 				// remove channel
 				delete(rchans, uid)
@@ -66,12 +93,12 @@ func waitForResponse(uid string, c chan string, noPeers int) {
 }
 
 func respContract(z string) {
-	println("response received... " + z)
+	log.Printf("contract response received, %s", z)
 
 	senz := parse(z)
 
 	// save event (response received)
-	t := eventTrans(senz.Sender, "opsresp", "Contract response received")
+	t := eventTrans(senz.Sender, "3ops", "Contract response received")
 	createTrans(t)
 
 	// publish to tranz

@@ -31,6 +31,11 @@ type KafkaConfig struct {
 	zport  string
 }
 
+type ApiConfig struct {
+	prApi string
+	poApi string
+}
+
 var config = Config{
 	switchName: getEnv("SWITCH_NAME", "senzswitch"),
 	switchHost: getEnv("SWITCH_HOST", "www.rahasak.com"),
@@ -56,6 +61,11 @@ var kafkaConfig = KafkaConfig{
 	kport:  getEnv("KAFKA_KPORT", "9092"),
 	zhost:  getEnv("KAFKA_ZHOST", "dev.localhost"),
 	zport:  getEnv("KAFKA_ZPORT", "2181"),
+}
+
+var apiConfig = ApiConfig{
+	prApi: getEnv("PR_API", "/v1.0/PurchaseRequest"),
+	poApi: getEnv("PO_API", "/v1.0/PurchaseOrder"),
 }
 
 func getEnv(key, fallback string) string {
