@@ -64,8 +64,8 @@ var kafkaConfig = KafkaConfig{
 }
 
 var apiConfig = ApiConfig{
-	prApi: getEnv("PR_API", "/v1.0/PurchaseRequest"),
-	poApi: getEnv("PO_API", "/v1.0/PurchaseOrder"),
+	prApi: getEnv("PR_API", "http://dev.localhost/v1.0/PurchaseRequest"),
+	poApi: getEnv("PO_API", "https://dev.localhost/v1.0/PurchaseOrder"),
 }
 
 func getEnv(key, fallback string) string {

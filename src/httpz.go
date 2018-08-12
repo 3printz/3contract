@@ -26,8 +26,7 @@ func notifyPreq() {
 	j, _ := json.Marshal(obj)
 
 	// new request
-	uri := "http://dev.localhost" + apiConfig.prApi
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(j))
+	req, err := http.NewRequest("POST", apiConfig.prApi, bytes.NewBuffer(j))
 	req.Header.Set("Content-Type", "application/json")
 
 	// send request
