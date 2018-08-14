@@ -9,19 +9,17 @@ import (
 )
 
 type NotifyPr struct {
-	Oem    string
-	Amc    string
-	Msg    string
-	Status string
+	AMC_ID      string
+	PR_ID       string
+	MatchStatus string
 }
 
-func notifyPreq() {
+func notifyPreq(prId string) {
 	// json req
 	obj := NotifyPr{
-		Oem:    "oem1",
-		Amc:    "amc1",
-		Msg:    "match done",
-		Status: "SUCCESS",
+		AMC_ID:      "8c43a1e0-794f-11e8-8c3a-2f9c177c5396",
+		PR_ID:       prId,
+		MatchStatus: "SUCCESS",
 	}
 	j, _ := json.Marshal(obj)
 

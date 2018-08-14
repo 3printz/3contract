@@ -26,6 +26,7 @@ func reqContract(z string) {
 		// create channel and add to rchans with uuid
 		c := make(chan string, 5)
 		uid := senz.Attr["uid"]
+		prId := senz.Attr["prid"]
 		rchans[uid] = c
 
 		// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
@@ -44,7 +45,7 @@ func reqContract(z string) {
 		}
 
 		// wait for response
-		waitForResponse(uid, c, len(topics))
+		waitForResponse(uid, prId, c, len(topics))
 	}
 
 	if senz.Attr["type"] == "PORD" {
@@ -68,7 +69,7 @@ func reqContract(z string) {
 	}
 }
 
-func waitForResponse(uid string, c chan string, noPeers int) {
+func waitForResponse(uid string, prId string, c chan string, noPeers int) {
 	var i int = 0
 	responses := []string{}
 	for {
@@ -83,7 +84,7 @@ func waitForResponse(uid string, c chan string, noPeers int) {
 			if i == noPeers {
 				// all peer responses received, send response back
 				log.Printf("all peers done uid: %s", "<UID>")
-				notifyPreq()
+				notifyPreq(prId)
 
 				// remove channel
 				delete(rchans, uid)
