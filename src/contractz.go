@@ -82,9 +82,15 @@ func waitForResponse(uid string, prId string, c chan string, noPeers int) {
 
 			i = i + 1
 			if i == noPeers {
-				// all peer responses received, send response back
+				// all peer responses received, do matching logic
+				// send response back
 				log.Printf("all peers done uid: %s", "<UID>")
-				notifyPreq(prId)
+				for _, z := range responses {
+					senz := parse(z)
+					if senz.Attr["match"] == "YES" {
+						notifyPreq(prId, senz.Attr["zid"], "SUCCESS")
+					}
+				}
 
 				// remove channel
 				delete(rchans, uid)

@@ -14,14 +14,16 @@ type NotifyPr struct {
 	MatchStatus string
 }
 
-func notifyPreq(prId string) {
+func notifyPreq(prId string, amcId string, status string) {
 	// json req
 	obj := NotifyPr{
-		AMC_ID:      "8c43a1e0-794f-11e8-8c3a-2f9c177c5396",
+		AMC_ID:      amcId,
 		PR_ID:       prId,
-		MatchStatus: "SUCCESS",
+		MatchStatus: status,
 	}
 	j, _ := json.Marshal(obj)
+
+	log.Printf("INFO: send request to, %s with %s", apiConfig.prApi, string(j))
 
 	// new request
 	req, err := http.NewRequest("POST", apiConfig.prApi, bytes.NewBuffer(j))
