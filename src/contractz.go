@@ -12,7 +12,7 @@ func reqContract(z string) {
 	senz := parse(z)
 	if senz.Attr["type"] == "PREQ" {
 		// save event (request contract)
-		t := eventTrans("newco.biz", "newco.bcm", "Purchase request contract")
+		t := eventTrans("newco.biz", "newco.bcm", "User accept Purchase Reqeust")
 		createTrans(t)
 
 		// publish to tranz
@@ -29,11 +29,11 @@ func reqContract(z string) {
 		prId := senz.Attr["prid"]
 		rchans[uid] = c
 
-		// TODO find all chainz topics(designers, and printers) from etcd/zookeeper
+		// TODO find all chainz topics(oems, amcs) from etcd/zookeeper
 		topics := []string{"oem1", "amc1"}
 		for _, topic := range topics {
 			// save even
-			t = eventTrans("newco.bcm", topic+".scm", "Purchase request contract")
+			t = eventTrans("newco.bcm", topic+".scm", "Broadcast PR smart contract")
 			createTrans(t)
 
 			// publish to kafka
@@ -50,7 +50,7 @@ func reqContract(z string) {
 
 	if senz.Attr["type"] == "PORD" {
 		// save event (request contract)
-		t := eventTrans("newco.biz", "newco.bcm", "Purchase order contract")
+		t := eventTrans("newco.biz", "newco.bcm", "Purchase order raised by User approved by NewCo")
 		createTrans(t)
 
 		// publish to tranz
@@ -65,7 +65,7 @@ func reqContract(z string) {
 		topics := []string{"oem1", "amc1"}
 		for _, topic := range topics {
 			// save even
-			t = eventTrans("newco.bcm", topic+".scm", "Purchase order contract")
+			t = eventTrans("newco.bcm", topic+".scm", "Notify Purchase Order contract")
 			createTrans(t)
 		}
 
@@ -74,7 +74,7 @@ func reqContract(z string) {
 
 	if senz.Attr["type"] == "DPREP" {
 		// save event (request contract)
-		t := eventTrans("newco.biz", "newco.bcm", "Data prep contract")
+		t := eventTrans("newco.biz", "newco.bcm", "Data preperation request")
 		createTrans(t)
 
 		// publish to tranz
@@ -89,7 +89,7 @@ func reqContract(z string) {
 		topics := []string{"oem1", "amc1"}
 		for _, topic := range topics {
 			// save even
-			t = eventTrans("newco.bcm", topic+".scm", "Data prep contract")
+			t = eventTrans("newco.bcm", topic+".scm", "Notify Data preperation contract")
 			createTrans(t)
 		}
 
@@ -133,7 +133,7 @@ func respContract(z string) {
 	senz := parse(z)
 
 	// save event (response received)
-	t := eventTrans(senz.Sender+".scm", "newco.bcm", "Purchase request response")
+	t := eventTrans(senz.Sender+".scm", "newco.bcm", "Recived PR response")
 	createTrans(t)
 
 	// publish to tranz
