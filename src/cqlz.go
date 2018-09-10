@@ -11,6 +11,7 @@ import (
 type Trans struct {
 	Bank          string
 	Id            gocql.UUID
+	Cid           string
 	PromizeBank   string
 	PromizeId     gocql.UUID
 	PromizeAmount string
@@ -81,6 +82,7 @@ func createTrans(trans *Trans) error {
 		q := "INSERT INTO " + table + ` (
                 origin_zaddress,
                 id,
+				cid,
                 blob,
                 from_zaddress,
                 to_zaddress,
@@ -88,10 +90,11 @@ func createTrans(trans *Trans) error {
                 digsig,
                 action
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		err := Session.Query(q,
 			trans.Bank,
 			trans.Id,
+			trans.Cid,
 			trans.PromizeBlob,
 			trans.FromZaddress,
 			trans.ToZaddress,

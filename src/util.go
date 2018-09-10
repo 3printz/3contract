@@ -88,10 +88,11 @@ func senzToTrans(senz *Senz) *Trans {
 	return trans
 }
 
-func eventTrans(from string, to string, event string) *Trans {
+func eventTrans(cid string, from string, to string, event string) *Trans {
 	trans := &Trans{}
 	trans.Bank = config.senzieName
 	trans.Id = uuid()
+	trans.Cid = cid
 	trans.Timestamp = timestamp()
 	trans.FromZaddress = from
 	trans.ToZaddress = to
