@@ -15,10 +15,14 @@ func reqContract(z string) {
 		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "User accept Purchase Reqeust")
 		createTrans(t)
 
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create Purchase Request smart contract")
+		createTrans(t)
+
 		// publish to tranz
 		kmsg := Kmsg{
 			Topic: "tranz",
-			Msg:   tranzSenz(t.Id.String(), t.Type, t.Timestamp),
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
 		}
 		kchan <- kmsg
 
@@ -53,10 +57,14 @@ func reqContract(z string) {
 		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Purchase order raised by User approved by NewCo")
 		createTrans(t)
 
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create Purchase Order smart contract")
+		createTrans(t)
+
 		// publish to tranz
 		kmsg := Kmsg{
 			Topic: "tranz",
-			Msg:   tranzSenz(t.Id.String(), t.Type, t.Timestamp),
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
 		}
 		kchan <- kmsg
 
@@ -77,10 +85,14 @@ func reqContract(z string) {
 		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Data preperation request")
 		createTrans(t)
 
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create Data Prep smart contract")
+		createTrans(t)
+
 		// publish to tranz
 		kmsg := Kmsg{
 			Topic: "tranz",
-			Msg:   tranzSenz(t.Id.String(), t.Type, t.Timestamp),
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
 		}
 		kchan <- kmsg
 
@@ -94,6 +106,32 @@ func reqContract(z string) {
 		}
 
 		notifyDprep(senz)
+	}
+
+	if senz.Attr["type"] == "PRNT" {
+		// save event (request contract)
+		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Print request")
+		createTrans(t)
+
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create print smart contract")
+		createTrans(t)
+
+		// publish to tranz
+		kmsg := Kmsg{
+			Topic: "tranz",
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
+		}
+		kchan <- kmsg
+
+		// handle purchase order
+		// save even
+		topics := []string{"oem1", "amc1"}
+		for _, topic := range topics {
+			// save even
+			t = eventTrans(senz.Attr["cid"], "newco.bcm", topic+".scm", "Notify Data preperation contract")
+			createTrans(t)
+		}
 	}
 }
 
@@ -133,13 +171,13 @@ func respContract(z string) {
 	senz := parse(z)
 
 	// save event (response received)
-	t := eventTrans(senz.Attr["cid"], senz.Sender+".scm", "newco.bcm", "Recived PR response")
+	t := eventTrans(senz.Attr["cid"], senz.Sender+".scm", "newco.bcm", "Send PR response back")
 	createTrans(t)
 
 	// publish to tranz
 	kmsg := Kmsg{
 		Topic: "tranz",
-		Msg:   tranzSenz(t.Id.String(), t.Type, t.Timestamp),
+		Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
 	}
 	kchan <- kmsg
 
