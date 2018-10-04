@@ -133,6 +133,43 @@ func reqContract(z string) {
 			createTrans(t)
 		}
 	}
+
+	if senz.Attr["type"] == "DELNOTE" {
+		// save event (request contract)
+		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Delievey note request")
+		createTrans(t)
+
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create delivery note smart contract")
+		createTrans(t)
+
+		// publish to tranz
+		kmsg := Kmsg{
+			Topic: "tranz",
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
+		}
+		kchan <- kmsg
+	}
+
+	if senz.Attr["type"] == "INVOICE" {
+		// save event (request contract)
+		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Invoice request")
+		createTrans(t)
+
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create invoice smart contract")
+		createTrans(t)
+
+		// publish to tranz
+		kmsg := Kmsg{
+			Topic: "tranz",
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
+		}
+		kchan <- kmsg
+
+		// notify invoice
+		notifyInvoice(senz)
+	}
 }
 
 func waitForResponse(uid string, prId string, c chan string, noPeers int) {

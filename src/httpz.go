@@ -29,6 +29,11 @@ type NotifyDprep struct {
 	ENTITY_ID string
 }
 
+type NotifyInvoice struct {
+	INVOICE_ID  string
+	CUSTOMER_ID string
+}
+
 func notifyPreq(prId string, amcId string, status string) {
 	// json req
 	obj := NotifyPr{
@@ -87,6 +92,16 @@ func notifyDprep(senz Senz) {
 	}
 	j, _ := json.Marshal(obj1)
 	notify(j, senz.Attr["amcapi"])
+}
+
+func notifyInvoice(senz Senz) {
+	// notify amc
+	obj1 := NotifyInvoice{
+		INVOICE_ID:  senz.Attr["inid"],
+		CUSTOMER_ID: senz.Attr["customerId"],
+	}
+	j, _ := json.Marshal(obj1)
+	notify(j, senz.Attr["callback"])
 }
 
 func notify(j []byte, uri string) {
