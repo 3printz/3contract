@@ -187,6 +187,26 @@ func reqContract(z string) {
 		}
 		kchan <- kmsg
 	}
+
+	if senz.Attr["type"] == "PAY" {
+		// save event (request contract)
+		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Payment request")
+		createTrans(t)
+
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Create payment smart contract")
+		createTrans(t)
+
+		// publish to tranz
+		kmsg := Kmsg{
+			Topic: "tranz",
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
+		}
+		kchan <- kmsg
+
+		// notify invoice
+		notifyPayment(senz)
+	}
 }
 
 func waitForResponse(uid string, prId string, c chan string, noPeers int) {

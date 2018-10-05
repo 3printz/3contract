@@ -30,8 +30,8 @@ type NotifyDprep struct {
 }
 
 type NotifyInvoice struct {
-	INVOICE_ID  string
-	CUSTOMER_ID string
+	INVOICE_ID string
+	ENTITY_ID  string
 }
 
 func notifyPreq(prId string, amcId string, status string) {
@@ -97,8 +97,18 @@ func notifyDprep(senz Senz) {
 func notifyInvoice(senz Senz) {
 	// notify amc
 	obj1 := NotifyInvoice{
-		INVOICE_ID:  senz.Attr["inid"],
-		CUSTOMER_ID: senz.Attr["customerId"],
+		INVOICE_ID: senz.Attr["inid"],
+		ENTITY_ID:  senz.Attr["customerId"],
+	}
+	j, _ := json.Marshal(obj1)
+	notify(j, senz.Attr["callback"])
+}
+
+func notifyPayment(senz Senz) {
+	// notify amc
+	obj1 := NotifyInvoice{
+		INVOICE_ID: senz.Attr["inid"],
+		ENTITY_ID:  senz.Attr["entityId"],
 	}
 	j, _ := json.Marshal(obj1)
 	notify(j, senz.Attr["callback"])
