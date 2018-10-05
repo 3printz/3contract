@@ -170,6 +170,23 @@ func reqContract(z string) {
 		// notify invoice
 		notifyInvoice(senz)
 	}
+
+	if senz.Attr["type"] == "ACK" {
+		// save event (request contract)
+		t := eventTrans(senz.Attr["cid"], "newco.biz", "newco.bcm", "Ack request")
+		createTrans(t)
+
+		// save envet instantiate SC
+		t = eventTrans(senz.Attr["cid"], "newco.bcm", "newco.scm", "Ack smart contract")
+		createTrans(t)
+
+		// publish to tranz
+		kmsg := Kmsg{
+			Topic: "tranz",
+			Msg:   tranzSenz(t.Cid, t.Type, t.Timestamp),
+		}
+		kchan <- kmsg
+	}
 }
 
 func waitForResponse(uid string, prId string, c chan string, noPeers int) {
